@@ -28,23 +28,28 @@ int command_generate(recv_command_t *command, char *buffer){
   char command_str[command_len];
   memcpy(command_str, buffer, command_len);
 
-	printf("command_string: %s\r\n", buffer);
+	// printf("command_string: %s (len: %d)\r\n", command_str, command_len);
 
   //Seperate commands into parts
   char param_part[10];
   char command_part[10];
 
-  char * pch;
-  int part = 0;
-  pch = strtok (command_str," ");
-  while (pch != NULL){
-    if(part == 0){
-      strncpy(command_part, pch, strlen(pch));
+  char *token;
+	char *saveptr;
+	char * str;
+
+  int j;
+	for(j = 1,str = command_str;; j++, str = NULL) {
+		token = strtok_r(str, " ", &saveptr);
+		if(token == NULL){
+			break;
+		}
+		// printf("%d, %s\r\n", j,token);
+	  if(j == 1){
+      strncpy(command_part, token, strlen(token));
     } else {
-      strncpy(param_part, pch, strlen(pch));
+      strncpy(param_part, token, strlen(token));
     }
-    pch = strtok (NULL, " ");
-    part++;
   }
 
   //Find a matching command for the given command string
@@ -55,7 +60,7 @@ int command_generate(recv_command_t *command, char *buffer){
     command_compare = (char *) recv_command_to_str(recv_commands[i].id);
     size_t cclen = strlen(command_compare);
 
-		printf("comparing %s and %s\r\n", command_compare, command_part);
+		// printf("comparing %s and %s\r\n", command_compare, command_part);
 
     if(strncmp(command_compare, command_part, MIN(cclen, cplen)) == 0){
       //When a matching command is found, populate the command
@@ -64,7 +69,7 @@ int command_generate(recv_command_t *command, char *buffer){
       command->type = recv_commands[i].type;
       command->unit = recv_commands[i].unit;
 
-			printf("param_part: %s\r\n", param_part);
+			// printf("param_part: %s\r\n", param_part);
 
       // Set command parameter for parameterised commands
 			switch(command->type){
