@@ -187,7 +187,7 @@ void httpd_task(void *pvParameters)
 }
 
 void serial_recv_task(void *pvParameters){
-  thread_args_t * args = (thread_args_t *) pvParameters;
+  thread_args_t * targs = (thread_args_t *) pvParameters;
 
   char buffer[100];
   int pos = 0;
@@ -202,11 +202,18 @@ void serial_recv_task(void *pvParameters){
       printf( "\r\n");
       recv_command_t command;
       //Generate a command structure for the command given
-      if(!command_generate(&command, buffer)){
+      if(!recv_command_generate(&command, buffer)){
         printf("\rCommand not recognised!\r\n");
       } else {
         printf("command: %s\r\n", recv_command_to_str(command.id));
-      };
+
+				//Add command to queue
+			// 	if(xQueueSendToBack(targs->command_queue, (void *) &command, (TickType_t) 10) != pdPASS){
+			// 		printf("Could not add command to queue");
+			// 	}
+			recv_command_execute(&command, targs);
+       };
+
 
       pos = -1;
     }
@@ -221,6 +228,22 @@ void serial_recv_task(void *pvParameters){
     pos++;
   }
 }
+
+// void command_exec_task(void *pvParameters){
+// 	thread_args_t * targs = (thread_args_t *) pvParameters;
+// 	recv_command_t command;
+// 	while(1){
+//
+// 		if(xQueueReceive(targs->command_queue, &command, portMAX_DELAY) != pdPASS){
+// 			printf("Nothing on queue!\r\n");
+// 		} else {
+// 			printf("Handling command\r\n");
+// 			recv_command_execute(&command, targs);
+// 		}
+//
+// 	}
+// }
+
 
 void user_init(void) {
     uart_set_baud(0, 115200);
@@ -237,6 +260,14 @@ void user_init(void) {
 		thread_args_t targs;
 		memset(&targs, 0x00, sizeof(thread_args_t));
 
+		// printf("esp_init(): Command Queue\r\n");
+		//Create command queue
+		// targs.command_queue = xQueueCreate(10, sizeof(recv_command_t));
+		// if(targs.command_queue == NULL){
+		// 	printf("Command queue could not be created.\r\n");
+		// }
+
+		printf("esp_init(): WiFi\r\n");
     /* required to call wifi_set_opmode before station_set_config */
     sdk_wifi_set_opmode(STATION_MODE);
     sdk_wifi_station_set_config(&config);
@@ -246,7 +277,9 @@ void user_init(void) {
     gpio_enable(LED_PIN, GPIO_OUTPUT);
     gpio_write(LED_PIN, true);
 
+		printf("esp_init(): Create Tasks\r\n");
     /* initialize tasks */
     xTaskCreate(&httpd_task, "HTTP Daemon", 128, (void *) &targs, 2, NULL);
 		xTaskCreate(&serial_recv_task, "Serial Receive Task", 1024, (void*) &targs, 2, NULL);
+		// xTaskCreate(&command_exec_task, "Command Execute Task", 1024, (void*) &targs, 2, NULL);
 }

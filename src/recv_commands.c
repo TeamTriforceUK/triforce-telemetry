@@ -21,7 +21,7 @@ const char * recv_command_to_str(command_id_t id){
 	return recv_commands[id].name;
 }
 
-int command_generate(recv_command_t *command, char *buffer){
+int recv_command_generate(recv_command_t *command, char *buffer){
 	printf("buffer: %s\r\n", buffer);
   //Get the size of the entire command string
   size_t command_len = strlen(buffer);
@@ -73,25 +73,30 @@ int command_generate(recv_command_t *command, char *buffer){
 
 			// printf("param_part: %s\r\n", param_part);
 
+      char *end;
       // Set command parameter for parameterised commands
 			switch(command->type){
 				  case CT_INT:
-						command->param.i = atoi(param_part);
+						command->param.i = strtol(param_part, &end, 10);
+						if(end == param_part){
+							printf("Conversion error\r\n");
+							return RET_ERROR;
+						}
 						printf("d: %d\r\n", command->param.i);
 						break;
 				  case CT_FLOAT:
-						command->param.f = atof(param_part);
+						command->param.f = strtod(param_part, &end);
+						if(end == param_part){
+							printf("Conversion error\r\n");
+							return RET_ERROR;
+						}
 						printf("f: %f\r\n", command->param.f);
 						break;
 				  case CT_STRING:
 					default:
 						printf("unsupported param\r\n");
-						break;
+						return RET_ERROR;
 			}
-      // int i;
-      // for(i = 0; i < part; i++){
-      //   memcpy(command->param[i], param_part[i], strlen(param_part[i]));
-      // }
 
       //return true if matching command is found
       return RET_OK;
@@ -100,4 +105,45 @@ int command_generate(recv_command_t *command, char *buffer){
 
   //Return false (0) if no match is found
   return RET_ERROR;
+}
+
+int recv_command_execute(recv_command_t *command, thread_args_t *targs){
+	switch(command->id){
+		case CID_RING_RPM:
+			targs->mbed_params.ring_rpm = command->param.f;
+			break;
+		case CID_CON_1_RPM:
+			targs->mbed_params.con_1_rpm = command->param.f;
+			break;
+		case CID_CON_2_RPM:
+			targs->mbed_params.con_2_rpm = command->param.f;
+			break;
+		case CID_ACCEL_X:
+			targs->mbed_params.accel_x = command->param.f;
+			break;
+		case CID_ACCEL_Y:
+			targs->mbed_params.accel_y = command->param.f;
+			break;
+		case CID_ACCEL_Z:
+			targs->mbed_params.accel_x = command->param.f;
+			break;
+		case CID_PITCH:
+			targs->mbed_params.accel_z = command->param.f;
+			break;
+		case CID_ROLL:
+			targs->mbed_params.roll = command->param.f;
+			break;
+		case CID_YAW:
+			targs->mbed_params.yaw = command->param.f;
+			break;
+		case CID_WEAPON_VOLTAGE:
+			targs->mbed_params.weapon_voltage = command->param.f;
+			break;
+		case CID_DRIVE_VOLTAGE:
+			targs->mbed_params.drive_voltage = command->param.f;
+			break;
+		case CID_AMBIENT_TEMP:
+			targs->mbed_params.ambient_temp = command->param.f;
+			break;
+	}
 }

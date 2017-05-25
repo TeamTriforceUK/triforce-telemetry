@@ -23,8 +23,8 @@ static recv_command_t recv_commands[] = {
 
 const char * recv_command_to_str(command_id_t id);
 
-int command_generate(recv_command_t *command, char *buffer);
-int command_execute(recv_command_t *command, thread_args_t *targs);
+int recv_command_generate(recv_command_t *command, char *buffer);
+int recv_command_execute(recv_command_t *command, thread_args_t *targs);
   // switch (id) {
   //   case CID_RING_RPM:
   //   case CID_CON_1_RPM:

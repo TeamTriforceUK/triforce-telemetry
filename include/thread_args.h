@@ -9,6 +9,9 @@
 #ifndef INCLUDE_THREAD_ARGS_H_
 #define INCLUDE_THREAD_ARGS_H_
 
+#include <FreeRTOS.h>
+#include <queue.h>
+
 typedef struct {
   struct {
     float ring_rpm;
@@ -24,6 +27,8 @@ typedef struct {
     float drive_voltage;
     float ambient_temp;
   } mbed_params;
+
+  QueueHandle_t command_queue;
 
 } thread_args_t;
 #endif  // INCLUDE_THREAD_ARGS_H_
