@@ -31,8 +31,10 @@ int command_generate(recv_command_t *command, char *buffer){
 	// printf("command_string: %s (len: %d)\r\n", command_str, command_len);
 
   //Seperate commands into parts
-  char param_part[10];
-  char command_part[10];
+	/* TODO: command_len is a safe size for these buffers, but we could be smart and
+	define these after we have tokenised, and use the correct size buffer. */
+  char param_part[command_len];
+  char command_part[command_len];
 
   char *token;
 	char *saveptr;
