@@ -1,8 +1,13 @@
-/*
- * HTTP server example.
- *
- * This sample code is in the public domain.
- */
+/**
+* @file http_server.c
+* @author https://github.com/lujji, Cameron A. Craig
+* @date 25 May 2017
+* @copyright Public Domain
+* @brief Connects to an access point and hosts a HTTP server.
+*        A web page is displayed, displaying telemetry data and
+*        allowing configuration of non safety-critical settings.
+*/
+
 #include <espressif/esp_common.h>
 #include <esp8266.h>
 #include <esp/uart.h>
@@ -13,7 +18,10 @@
 #include <ssid_config.h>
 #include <httpd/httpd.h>
 
-#define LED_PIN 2
+#include "config.h"
+#include "recv_command_type.h"
+#include "recv_commands.h"
+#include "thread_args.h"
 
 enum {
     SSI_UPTIME,
@@ -178,15 +186,56 @@ void httpd_task(void *pvParameters)
     for (;;);
 }
 
-void user_init(void)
-{
+void serial_recv_task(void *pvParameters){
+  thread_args_t * args = (thread_args_t *) pvParameters;
+
+  char buffer[100];
+  int pos = 0;
+  printf( "$");
+
+	while(1){
+    buffer[pos] = getchar();
+
+    // If ENTER key is pressed, execute command
+    if(buffer[pos] == UART_END){
+      buffer[pos+1] = NULL;
+      printf( "\r\n");
+      recv_command_t command;
+      //Generate a command structure for the command given
+      if(!command_generate(&command, buffer)){
+        printf("\rCommand not recognised!\r\n");
+      } else {
+        printf("command: %s\r\n", recv_command_to_str(command.id));
+      };
+
+      pos = -1;
+    }
+
+    if(buffer[pos] == UART_START){
+      buffer[pos] = NULL;
+      pos = 0;
+    }
+
+    buffer[pos+1] = NULL;
+    printf("\r$ %s", buffer);
+    pos++;
+  }
+}
+
+void user_init(void) {
     uart_set_baud(0, 115200);
-    printf("SDK version:%s\n", sdk_system_get_sdk_version());
+
+    printf("Triforce Telemetry v%s\n", VERSION);
+		printf("FreeRTOS ESP8266 SDK v%s\n", sdk_system_get_sdk_version());
 
     struct sdk_station_config config = {
         .ssid = WIFI_SSID,
         .password = WIFI_PASS,
     };
+
+    // Shared data between threads/tasks.
+		thread_args_t targs;
+		memset(&targs, 0x00, sizeof(thread_args_t));
 
     /* required to call wifi_set_opmode before station_set_config */
     sdk_wifi_set_opmode(STATION_MODE);
@@ -198,5 +247,6 @@ void user_init(void)
     gpio_write(LED_PIN, true);
 
     /* initialize tasks */
-    xTaskCreate(&httpd_task, "HTTP Daemon", 128, NULL, 2, NULL);
+    xTaskCreate(&httpd_task, "HTTP Daemon", 128, (void *) &targs, 2, NULL);
+		xTaskCreate(&serial_recv_task, "Serial Receive Task", 1024, (void*) &targs, 2, NULL);
 }
