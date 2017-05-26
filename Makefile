@@ -1,4 +1,4 @@
-PROGRAM=triforce-telemetry
+PROGRAM=triforce_telemetry
 
 EXTRA_CFLAGS=-DLWIP_HTTPD_CGI=1 -DLWIP_HTTPD_SSI=1 -I./fsdata -I./include
 ESP_OPEN_RTOS_PATH=/home/cameron/git/esp-open-rtos

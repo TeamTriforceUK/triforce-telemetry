@@ -28,6 +28,10 @@ typedef struct {
     float ambient_temp;
   } mbed_params;
 
+  struct {
+    bool led;
+  } esp_params;
+
   QueueHandle_t command_queue;
 
 } thread_args_t;

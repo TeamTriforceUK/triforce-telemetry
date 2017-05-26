@@ -8,10 +8,13 @@
 #ifndef INCLUDE_RECV_COMMAND_TYPE_H_
 #define INCLUDE_RECV_COMMAND_TYPE_H_
 
+#include <stdbool.h>
+
 typedef enum  {
   CT_INT = 0,
   CT_FLOAT,
-  CT_STRING
+  CT_STRING,
+	CT_BOOLEAN
 } command_type_t;
 
 typedef enum  {
@@ -20,7 +23,8 @@ typedef enum  {
   CU_MPSPS,
   CU_CELCIUS,
   CU_VOLTS,
-  CU_DEGREES
+  CU_DEGREES,
+	CU_NONE
 } command_unit_t;
 
 typedef enum  {
@@ -35,7 +39,8 @@ typedef enum  {
   CID_YAW,
   CID_WEAPON_VOLTAGE,
   CID_DRIVE_VOLTAGE,
-  CID_AMBIENT_TEMP
+  CID_AMBIENT_TEMP,
+  CID_ESP_LED
 } command_id_t;
 
 typedef struct {
@@ -48,6 +53,7 @@ typedef struct {
     float f;
     int i;
     char c;
+    bool b;
   } param;
 
 } recv_command_t;

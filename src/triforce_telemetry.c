@@ -23,14 +23,17 @@
 #include "recv_commands.h"
 #include "thread_args.h"
 
+/* Allows thread_args to be accessible to callback functions that do not easily
+   support (void *) arguments. */
+thread_args_t *gargs;
+
 enum {
     SSI_UPTIME,
     SSI_FREE_HEAP,
     SSI_LED_STATE
 };
 
-int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
-{
+int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen) {
     switch (iIndex) {
         case SSI_UPTIME:
             snprintf(pcInsert, iInsertLen, "%d",
@@ -51,8 +54,7 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
     return (strlen(pcInsert));
 }
 
-char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
-{
+char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]) {
     for (int i = 0; i < iNumParams; i++) {
         if (strcmp(pcParam[i], "on") == 0) {
             uint8_t gpio_num = atoi(pcValue[i]);
@@ -71,18 +73,15 @@ char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValu
     return "/index.ssi";
 }
 
-char *about_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
-{
+char *about_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]) {
     return "/about.html";
 }
 
-char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
-{
+char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]) {
     return "/websockets.html";
 }
 
-void websocket_task(void *pvParameter)
-{
+void websocket_task(void *pvParameter) {
     struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter;
 
     for (;;) {
@@ -96,11 +95,38 @@ void websocket_task(void *pvParameter)
         int led = !gpio_read(LED_PIN);
 
         /* Generate response in JSON format */
-        char response[64];
+        char response[512];
         int len = snprintf(response, sizeof (response),
-                "{\"uptime\" : \"%d\","
-                " \"heap\" : \"%d\","
-                " \"led\" : \"%d\"}", uptime, heap, led);
+          "{\"uptime\" : \"%d\","
+          " \"heap\" : \"%d\","
+          " \"led\" : \"%d\","
+					" \"ring_rpm\" : \"%.2f\","
+					" \"con_1_rpm\" : \"%.2f\","
+					" \"con_2_rpm\" : \"%.2f\","
+					" \"accel_x\" : \"%.2f\","
+					" \"accel_y\" : \"%.2f\","
+					" \"accel_z\" : \"%.2f\","
+					" \"pitch\" : \"%.2f\","
+					" \"roll\" : \"%.2f\","
+					" \"yaw\" : \"%.2f\","
+					" \"w_voltage\" : \"%.2f\","
+					" \"d_voltage\" : \"%.2f\","
+					" \"temp\" : \"%.2f\"}"
+					, uptime, heap,
+					gargs->esp_params.led,
+					gargs->mbed_params.ring_rpm,
+					gargs->mbed_params.con_1_rpm,
+					gargs->mbed_params.con_2_rpm,
+					gargs->mbed_params.accel_x,
+					gargs->mbed_params.accel_y,
+					gargs->mbed_params.accel_z,
+					gargs->mbed_params.pitch,
+					gargs->mbed_params.roll,
+					gargs->mbed_params.yaw,
+					gargs->mbed_params.weapon_voltage,
+					gargs->mbed_params.drive_voltage,
+					gargs->mbed_params.ambient_temp
+				);
         if (len < sizeof (response))
             websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
 
@@ -116,8 +142,7 @@ void websocket_task(void *pvParameter)
  * Note: this function is executed on TCP thread and should return as soon
  * as possible.
  */
-void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode)
-{
+void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode) {
     printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data);
 
     uint8_t response[2];
@@ -129,11 +154,11 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
             val = sdk_system_adc_read();
             break;
         case 'D': // Disable LED
-            gpio_write(LED_PIN, true);
+            gargs->esp_params.led = false;
             val = 0xDEAD;
             break;
         case 'E': // Enable LED
-            gpio_write(LED_PIN, false);
+            gargs->esp_params.led = true;
             val = 0xBEEF;
             break;
         default:
@@ -152,17 +177,15 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
  * This function is called when new websocket is open and
  * creates a new websocket_task if requested URI equals '/stream'.
  */
-void websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
-{
+void websocket_open_cb(struct tcp_pcb *pcb, const char *uri) {
     printf("WS URI: %s\n", uri);
     if (!strcmp(uri, "/stream")) {
         printf("request for streaming\n");
-        xTaskCreate(&websocket_task, "websocket_task", 256, (void *) pcb, 2, NULL);
+        xTaskCreate(&websocket_task, "websocket_task", 1024, (void *) pcb, 2, NULL);
     }
 }
 
-void httpd_task(void *pvParameters)
-{
+void httpd_task(void *pvParameters) {
     tCGI pCGIs[] = {
         {"/gpio", (tCGIHandler) gpio_cgi_handler},
         {"/about", (tCGIHandler) about_cgi_handler},
@@ -229,6 +252,13 @@ void serial_recv_task(void *pvParameters){
   }
 }
 
+void led_task(void *pvParameters){
+	thread_args_t * targs = (thread_args_t *) pvParameters;
+	while(1){
+		gpio_write(LED_PIN, !targs->esp_params.led);
+		vTaskDelay(50);
+	}
+}
 // void command_exec_task(void *pvParameters){
 // 	thread_args_t * targs = (thread_args_t *) pvParameters;
 // 	recv_command_t command;
@@ -260,6 +290,9 @@ void user_init(void) {
 		thread_args_t targs;
 		memset(&targs, 0x00, sizeof(thread_args_t));
 
+		//Allow targs to be globally accessible
+		gargs = &targs;
+
 		// printf("esp_init(): Command Queue\r\n");
 		//Create command queue
 		// targs.command_queue = xQueueCreate(10, sizeof(recv_command_t));
@@ -280,6 +313,7 @@ void user_init(void) {
 		printf("esp_init(): Create Tasks\r\n");
     /* initialize tasks */
     xTaskCreate(&httpd_task, "HTTP Daemon", 128, (void *) &targs, 2, NULL);
+    xTaskCreate(&led_task, "LED Update", 128, (void *) &targs, 2, NULL);
 		xTaskCreate(&serial_recv_task, "Serial Receive Task", 1024, (void*) &targs, 2, NULL);
 		// xTaskCreate(&command_exec_task, "Command Execute Task", 1024, (void*) &targs, 2, NULL);
 }

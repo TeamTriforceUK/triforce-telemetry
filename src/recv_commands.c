@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 const char * recv_command_to_str(command_id_t id){
 	if(id < 0 || id >= NUM_COMMANDS){
@@ -74,6 +75,10 @@ int recv_command_generate(recv_command_t *command, char *buffer){
 			// printf("param_part: %s\r\n", param_part);
 
       char *end;
+			int t;
+			size_t param_len = strlen(param_part);
+			printf("param len: %d\r\n", param_len);
+
       // Set command parameter for parameterised commands
 			switch(command->type){
 				  case CT_INT:
@@ -92,6 +97,12 @@ int recv_command_generate(recv_command_t *command, char *buffer){
 						}
 						printf("f: %f\r\n", command->param.f);
 						break;
+					case CT_BOOLEAN:
+						command->param.b = (strtod(param_part, &end) == 1);
+						if(param_part == end){
+							return RET_ERROR;
+						}
+						return RET_OK;
 				  case CT_STRING:
 					default:
 						printf("unsupported param\r\n");
@@ -125,10 +136,10 @@ int recv_command_execute(recv_command_t *command, thread_args_t *targs){
 			targs->mbed_params.accel_y = command->param.f;
 			break;
 		case CID_ACCEL_Z:
-			targs->mbed_params.accel_x = command->param.f;
+			targs->mbed_params.accel_z = command->param.f;
 			break;
 		case CID_PITCH:
-			targs->mbed_params.accel_z = command->param.f;
+			targs->mbed_params.pitch = command->param.f;
 			break;
 		case CID_ROLL:
 			targs->mbed_params.roll = command->param.f;
@@ -144,6 +155,10 @@ int recv_command_execute(recv_command_t *command, thread_args_t *targs){
 			break;
 		case CID_AMBIENT_TEMP:
 			targs->mbed_params.ambient_temp = command->param.f;
+			break;
+		case CID_ESP_LED:
+			targs->esp_params.led = command->param.b;
+			printf("LED now %s\r\n", command->param.b ? "On" : "Off");
 			break;
 	}
 }

@@ -32,8 +32,8 @@
 				</div>
 			</div>
 
-			<h1>Server Status</h1>
-			<table class="table table-striped">
+			<h1>ESP8266 Status</h1>
+			<table class="table table-sped">
 				<tr>
 					<td><b>Uptime:</b></td>
 					<td id="uptime"></td>
@@ -42,17 +42,66 @@
 					<td><b>Free heap:</b></td>
 					<td id="heap"></td>
 				</tr>
+			</table>
+			<h1>Telemetry</h1>
+			<table class="table table-striped">
 				<tr>
 					<td><b>LED state:</b></td>
 					<td id="led"></td>
 				</tr>
+				<tr>
+					<td><b>Arm Status:</b></td>
+					<td id="arm_status"></td>
+				</tr>
+				<tr>
+					<td><b>Ring RPM:</b></td>
+					<td id="ring_rpm"></td>
+				</tr>
+				<tr>
+					<td><b>Contact Wheel RPM 1</b></td>
+					<td id="con_1_rpm"></td>
+				</tr>
+				<tr>
+					<td><b>Contact Wheel RPM 2</b></td>
+					<td id="con_2_rpm"></td>
+				</tr>
+				<tr>
+					<td><b>Acceleration X</b></td>
+					<td id="accel_x"></td>
+				</tr>
+				<tr>
+					<td><b>Acceleration Y</b></td>
+					<td id="accel_y"></td>
+				</tr>
+				<tr>
+					<td><b>Acceleration Z</b></td>
+					<td id="accel_z"></td>
+				</tr>
+				<tr>
+					<td><b>Pitch</b></td>
+					<td id="pitch"></td>
+				</tr>
+				<tr>
+					<td><b>Roll</b></td>
+					<td id="roll"></td>
+				</tr>
+				<tr>
+					<td><b>Yaw</b></td>
+					<td id="yaw"></td>
+				</tr>
+				<tr>
+					<td><b>Weapon Voltage</b></td>
+					<td id="w_voltage"></td>
+				</tr>
+				<tr>
+					<td><b>Drive Voltage</b></td>
+					<td id="d_voltage"></td>
+				</tr>
+				<tr>
+					<td><b>Ambient Temperature</b></td>
+					<td id="temp"></td>
+				</tr>
 			</table>
-
-			<h1>How it works</h1>
-			<p>This demo uses 2 WebScokets. Status parameters are streamed by the server in JSON format every 2 seconds.
-				A <code>websocket_task</code> is created each time a specific URI is requested.</p>
-			<p>ADC values are being continuously polled by the client (i.e. your browser).
-				Each time a WebSocket frame is received on the server side, <code>websocket_cb</code> function is being called.</p>
 		</div>
 
 		<script type="text/javascript" src="js/smoothie_min.js"></script>
@@ -111,6 +160,18 @@
 					document.getElementById('uptime').innerHTML = stats.uptime + ' seconds';
 					document.getElementById('heap').innerHTML = stats.heap + ' bytes';
 					document.getElementById('led').innerHTML = (stats.led == 1) ? 'On' : 'Off';
+					document.getElementById('ring_rpm').innerHTML = stats.ring_rpm + ' RPM';
+					document.getElementById('con_1_rpm').innerHTML = stats.con_1_rpm + ' RPM';
+					document.getElementById('con_2_rpm').innerHTML = stats.con_2_rpm + ' RPM';
+					document.getElementById('accel_x').innerHTML = stats.accel_x + ' m/s/s';
+					document.getElementById('accel_y').innerHTML = stats.accel_y + ' m/s/s';
+					document.getElementById('accel_z').innerHTML = stats.accel_z + ' m/s/s';
+					document.getElementById('pitch').innerHTML = stats.pitch + ' deg';
+					document.getElementById('roll').innerHTML = stats.roll + ' deg';
+					document.getElementById('yaw').innerHTML = stats.yaw + ' deg';
+					document.getElementById('w_voltage').innerHTML = stats.w_voltage + ' volts';
+					document.getElementById('d_voltage').innerHTML = stats.d_voltage + ' volts';
+					document.getElementById('temp').innerHTML = stats.temp + ' C';
 				};
 			}
 			function wsWrite(data) {
