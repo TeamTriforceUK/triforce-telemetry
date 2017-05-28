@@ -78,7 +78,7 @@ char *about_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcVal
 }
 
 char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]) {
-    return "/websockets.html";
+    return "/telemetry.html";
 }
 
 void websocket_task(void *pvParameter) {
@@ -189,7 +189,7 @@ void httpd_task(void *pvParameters) {
     tCGI pCGIs[] = {
         {"/gpio", (tCGIHandler) gpio_cgi_handler},
         {"/about", (tCGIHandler) about_cgi_handler},
-        {"/websockets", (tCGIHandler) websocket_cgi_handler},
+        {"/telemetry", (tCGIHandler) websocket_cgi_handler},
     };
 
     const char *pcConfigSSITags[] = {
@@ -280,6 +280,7 @@ void user_init(void) {
 
     printf("Triforce Telemetry v%s\n", VERSION);
 		printf("FreeRTOS ESP8266 SDK v%s\n", sdk_system_get_sdk_version());
+		printf("Heap Size: %d bytes\n", configTOTAL_HEAP_SIZE);
 
     struct sdk_station_config config = {
         .ssid = WIFI_SSID,
