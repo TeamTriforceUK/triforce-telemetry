@@ -2,7 +2,7 @@
 * @file http_server.c
 * @author https://github.com/lujji, Cameron A. Craig
 * @date 25 May 2017
-* @copyright Public Domain
+* @copyright Cameron A. Craig
 * @brief Connects to an access point and hosts a HTTP server.
 *        A web page is displayed, displaying telemetry data and
 *        allowing configuration of non safety-critical settings.

@@ -1,3 +1,11 @@
+/**
+* @file recv_commands.h
+* @author Cameron A. Craig
+* @date 28 May 2017
+* @copyright 2017 Cameron A. Craig
+* @brief Defines commands that can be received on the serial port.
+*/
+
 #ifndef INCLUDE_RECV_COMMANDS_H_
 #define INCLUDE_RECV_COMMANDS_H_
 
