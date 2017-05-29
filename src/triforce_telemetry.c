@@ -317,4 +317,8 @@ void user_init(void) {
     xTaskCreate(&led_task, "LED Update", 128, (void *) &targs, 2, NULL);
 		xTaskCreate(&serial_recv_task, "Serial Receive Task", 1024, (void*) &targs, 2, NULL);
 		// xTaskCreate(&command_exec_task, "Command Execute Task", 1024, (void*) &targs, 2, NULL);
+
+    //Set ready pin to high
+    gpio_enable(READY_PIN, GPIO_OUTPUT);
+    gpio_write(READY_PIN, true);
 }

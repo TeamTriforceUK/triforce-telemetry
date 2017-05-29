@@ -13,8 +13,9 @@
 #define VERSION "0.1.0"
 
 #define LED_PIN 2
+#define READY_PIN 15
 
 #define UART_START 0x7F  // (backspace)
 #define UART_END 0xD  // (carriage return
 
-#endif // INCLUDE_CONFIG_H_
+#endif  // INCLUDE_CONFIG_H_
