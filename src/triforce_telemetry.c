@@ -22,6 +22,7 @@
 #include "recv_command_type.h"
 #include "recv_commands.h"
 #include "thread_args.h"
+#include "states.h"
 
 /* Allows thread_args to be accessible to callback functions that do not easily
    support (void *) arguments. */
@@ -111,7 +112,8 @@ void websocket_task(void *pvParameter) {
 					" \"yaw\" : \"%.2f\","
 					" \"w_voltage\" : \"%.2f\","
 					" \"d_voltage\" : \"%.2f\","
-					" \"temp\" : \"%.2f\"}"
+					" \"temp\" : \"%.2f\","
+					" \"arm_status\" : \"%s\"}"
 					, uptime, heap,
 					gargs->esp_params.led,
 					gargs->mbed_params.ring_rpm,
@@ -125,7 +127,8 @@ void websocket_task(void *pvParameter) {
 					gargs->mbed_params.yaw,
 					gargs->mbed_params.weapon_voltage,
 					gargs->mbed_params.drive_voltage,
-					gargs->mbed_params.ambient_temp
+					gargs->mbed_params.ambient_temp,
+					state_to_str(gargs->mbed_params.arm_status)
 				);
         if (len < sizeof (response))
             websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);

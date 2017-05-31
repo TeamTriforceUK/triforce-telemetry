@@ -26,6 +26,7 @@ static recv_command_t recv_commands[] = {
   {.id = CID_DRIVE_VOLTAGE, .name = "d_voltage", .unit = CU_VOLTS, .type = CT_FLOAT},
   {.id = CID_AMBIENT_TEMP, .name = "temp", .unit = CU_CELCIUS, .type = CT_FLOAT},
   {.id = CID_ESP_LED, .name = "esp_led", .unit = CU_NONE, .type = CT_BOOLEAN},
+  {.id = CID_ARM_STATUS, .name = "arm_status", .unit = CU_NONE, .type = CT_INT},
 };
 
 #define NUM_COMMANDS (sizeof(recv_commands) / sizeof(recv_command_t))

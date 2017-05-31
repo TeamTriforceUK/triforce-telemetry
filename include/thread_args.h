@@ -12,6 +12,8 @@
 #include <FreeRTOS.h>
 #include <queue.h>
 
+#include "states.h"
+
 typedef struct {
   struct {
     float ring_rpm;
@@ -26,6 +28,7 @@ typedef struct {
     float weapon_voltage;
     float drive_voltage;
     float ambient_temp;
+    state_t arm_status
   } mbed_params;
 
   struct {

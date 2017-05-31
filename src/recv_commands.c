@@ -160,5 +160,7 @@ int recv_command_execute(recv_command_t *command, thread_args_t *targs){
 			targs->esp_params.led = command->param.b;
 			printf("LED now %s\r\n", command->param.b ? "On" : "Off");
 			break;
+    case CID_ARM_STATUS:
+      targs->mbed_params.arm_status = (state_t) command->param.i;
 	}
 }
