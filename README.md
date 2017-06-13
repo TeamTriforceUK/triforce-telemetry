@@ -12,7 +12,7 @@ The Trforce Control firmware (mbed OS) runs on an LPC1768 (ARM Cortex M3). The f
 
 #### [Triforce Telemetry](https://github.com/TeamTriforceUK/triforce-telemetry)
 
-The Triforce Telemetry repositiry hosts firmware (FreeRTOS) for the ESP8266 WiFi chip. This microcontroller works alongside the mbed to provide telemetry functionality via an HTTP server.
+The Triforce Telemetry repository hosts firmware (FreeRTOS) for the ESP8266 WiFi chip. This microcontroller works alongside the mbed to provide telemetry functionality via an HTTP server.
 
 The ESP8266 allows us to communicate telemetry from Triforce to connected mobile devices (tablets, laptops, mobile phones). We also control non-safety critical settings such as LED lights from the mobile device.
 
