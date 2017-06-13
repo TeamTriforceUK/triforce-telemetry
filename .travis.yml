@@ -1,0 +1,31 @@
+language: C
+
+sudo: required
+
+before_script:
+  # Install required packages for esp-open-sdk (as per https://github.com/pfalcon/esp-open-sdk/)
+  - sudo apt-get install make unrar-free autoconf automake libtool gcc g++ gperf \
+    flex bison texinfo gawk ncurses-dev libexpat-dev python-dev python python-serial \
+    sed git unzip bash help2man wget bzip2
+  # Clone the esp-open-sdk project
+  - git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
+  # Enter the directory of esp-open-sdk
+  - cd ./esp-open-sdk
+  # Build
+  - make STANDALONE=y
+  # Add the binaries we just built to the PATH environment variable
+  - PATH=$PATH:`pwd`/xtensa-lx106-elf/bin
+  # That's us done with esp-open-dsk, now clone esp-open-rtos
+  - cd ..
+  - git clone --recursive https://github.com/Superhouse/esp-open-rtos.git
+  # We also need to clone our code of course
+  - git clone https://github.com/TeamTriforceUK/triforce-telemetry.git
+  # We need to update the makefile in our repository to point at esp-open-rtos
+  - cd ./triforce-telemetry
+  - search="/home/cameron/git/esp-open-rtos"
+  - replace=`pwd`/../esp-open-rtos
+  - sed -i.bak 's,'$search','$replace',g' Makefile
+
+script:
+  # Compile project
+  - make
