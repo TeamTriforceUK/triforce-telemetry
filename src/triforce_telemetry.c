@@ -286,8 +286,8 @@ void user_init(void) {
 		printf("Heap Size: %d bytes\n", configTOTAL_HEAP_SIZE);
 
     struct sdk_station_config config = {
-        .ssid = WIFI_SSID,
-        .password = WIFI_PASS,
+        .ssid = DEFAULT_WIFI_SSID,
+        .password = DEFAULT_WIFI_PASS,
     };
 
     // Shared data between threads/tasks.
