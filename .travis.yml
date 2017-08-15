@@ -18,7 +18,7 @@ before_script:
   - make STANDALONE=y
   # Add the binaries we just built to the PATH environment variable
   - PATH=$PATH:`pwd`/xtensa-lx106-elf/bin
-  # That's us done with esp-open-dsk, now clone esp-open-rtos
+  # That's us done with esp-open-sdk, now clone esp-open-rtos
   - cd ..
   - git clone --recursive https://github.com/Superhouse/esp-open-rtos.git
   # We need to update the Makefile in our repository to point at esp-open-rtos
