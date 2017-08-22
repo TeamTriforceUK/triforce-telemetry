@@ -33,7 +33,12 @@
 			</div>
 
 			<h1>ESP8266 Status</h1>
+      <button id="save-btn">Send client time to bot</button>
 			<table class="table table-sped">
+        <tr>
+					<td><b>Robot time:</b></td>
+					<td id="bot_time"></td>
+				</tr>
 				<tr>
 					<td><b>Uptime:</b></td>
 					<td id="uptime"></td>
@@ -112,6 +117,13 @@
 			window.onload = function() {
 				wsOpen();
 				startPolling();
+
+        document.getElementById("save-btn").onclick = function fun() {
+          //Send client epoch time to robot
+          var epoch_time = (new Date).getTime();
+          console.log("Sending epoch " + epoch_time + "(" + ")");
+          wsWrite("time: " + epoch_time + "\r\n");
+        }
 			}
 			function setMsg(cls, text) {
 				sbox = document.getElementById('status_box');
@@ -164,6 +176,7 @@
 					console.log(stats);
 
 					//Update value on web page
+					document.getElementById('bot_time').innerHTML = stats.bot_time;
 					document.getElementById('uptime').innerHTML = stats.uptime + ' seconds';
 					document.getElementById('heap').innerHTML = stats.heap + ' bytes';
 					document.getElementById('led').innerHTML = (stats.led == 1) ? 'On' : 'Off';

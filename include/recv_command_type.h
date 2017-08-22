@@ -41,7 +41,8 @@ typedef enum  {
   CID_DRIVE_VOLTAGE,
   CID_AMBIENT_TEMP,
   CID_ESP_LED,
-  CID_ARM_STATUS
+  CID_ARM_STATUS,
+  CID_ROBOT_TIME
 } command_id_t;
 
 typedef struct {

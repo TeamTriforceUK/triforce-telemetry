@@ -17,12 +17,14 @@
 #include <task.h>
 #include <ssid_config.h>
 #include <httpd/httpd.h>
+#include <time.h>
 
 #include "config.h"
 #include "recv_command_type.h"
 #include "recv_commands.h"
 #include "thread_args.h"
 #include "states.h"
+#include "utils.h"
 
 /* Allows thread_args to be accessible to callback functions that do not easily
    support (void *) arguments. */
@@ -163,6 +165,25 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
         case 'E': // Enable LED
             gargs->esp_params.led = true;
             val = 0xBEEF;
+            break;
+        case 't':
+            if(strncmp(data, "time: ", MIN(5, data_len)) == 0){
+              time_t time = atoi(data+6);
+            //  stime(time);
+              printf("sizeof time_t: %d\r\n", sizeof(time_t));
+              printf("sizeof long: %d\r\n", sizeof(long));
+              printf("sizeof int: %d\r\n", sizeof(int));
+              printf("sizeof long long: %d\r\n", sizeof(long long));
+              printf("sizeof long int: %d\r\n", sizeof(long int));
+              printf("Time set to %d\r\n", (int)time);
+              printf("millis: %s\r\n", data+6);
+              long lm = atol(data+6);
+              printf("lm: %ld\r\n", lm);
+            } else {
+              printf("%.6s\r\n", data);
+              printf("millis: %s\r\n", data+6);
+              printf("Time not recognised!\r\n");
+            }
             break;
         default:
             printf("Unknown command\n");
