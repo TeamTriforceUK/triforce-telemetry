@@ -14,6 +14,8 @@ before_script:
   - git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
   # Enter the directory of esp-open-sdk
   - cd ./esp-open-sdk
+  # Add /usr/bin to start of PATH (possible fix for issue #1)
+  - PATH="/usr/bin:$PATH"
   # Build
   - make STANDALONE=y
   # Add the binaries we just built to the PATH environment variable
