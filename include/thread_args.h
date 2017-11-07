@@ -16,9 +16,12 @@
 
 typedef struct {
   struct {
-    float ring_rpm;
-    float con_1_rpm;
-    float con_2_rpm;
+    int32_t drive_1_rpm;
+    int32_t drive_2_rpm;
+    int32_t drive_3_rpm;
+    int32_t weapon_1_rpm;
+    int32_t weapon_2_rpm;
+    int32_t weapon_3_rpm;
     float accel_x;
     float accel_y;
     float accel_z;

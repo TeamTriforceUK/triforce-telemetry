@@ -101,35 +101,41 @@ void websocket_task(void *pvParameter) {
           "{\"uptime\" : \"%d\","
           " \"heap\" : \"%d\","
           " \"led\" : \"%d\","
-					" \"ring_rpm\" : \"%.2f\","
-					" \"con_1_rpm\" : \"%.2f\","
-					" \"con_2_rpm\" : \"%.2f\","
-					" \"accel_x\" : \"%.2f\","
-					" \"accel_y\" : \"%.2f\","
-					" \"accel_z\" : \"%.2f\","
-					" \"pitch\" : \"%.2f\","
-					" \"roll\" : \"%.2f\","
-					" \"yaw\" : \"%.2f\","
-					" \"w_voltage\" : \"%.2f\","
-					" \"d_voltage\" : \"%.2f\","
-					" \"temp\" : \"%.2f\","
-					" \"arm_status\" : \"%s\"}"
-					, uptime, heap,
-					gargs->esp_params.led,
-					gargs->mbed_params.ring_rpm,
-					gargs->mbed_params.con_1_rpm,
-					gargs->mbed_params.con_2_rpm,
-					gargs->mbed_params.accel_x,
-					gargs->mbed_params.accel_y,
-					gargs->mbed_params.accel_z,
-					gargs->mbed_params.pitch,
-					gargs->mbed_params.roll,
-					gargs->mbed_params.yaw,
-					gargs->mbed_params.weapon_voltage,
-					gargs->mbed_params.drive_voltage,
-					gargs->mbed_params.ambient_temp,
-					state_to_str(gargs->mbed_params.arm_status)
-				);
+          " \"drive_1_rpm\" : \"%d\","
+          " \"drive_2_rpm\" : \"%d\","
+          " \"drive_3_rpm\" : \"%d\","
+          " \"weapon_1_rpm\" : \"%d\","
+          " \"weapon_2_rpm\" : \"%d\","
+          " \"weapon_3_rpm\" : \"%d\","
+          " \"accel_x\" : \"%.2f\","
+          " \"accel_y\" : \"%.2f\","
+          " \"accel_z\" : \"%.2f\","
+          " \"pitch\" : \"%.2f\","
+          " \"roll\" : \"%.2f\","
+          " \"yaw\" : \"%.2f\","
+          " \"w_voltage\" : \"%.2f\","
+          " \"d_voltage\" : \"%.2f\","
+          " \"temp\" : \"%.2f\","
+          " \"arm_status\" : \"%s\"}"
+          , uptime, heap,
+          gargs->esp_params.led,
+          gargs->mbed_params.drive_1_rpm,
+          gargs->mbed_params.drive_2_rpm,
+          gargs->mbed_params.drive_3_rpm,
+          gargs->mbed_params.weapon_1_rpm,
+          gargs->mbed_params.weapon_2_rpm,
+          gargs->mbed_params.weapon_3_rpm,
+          gargs->mbed_params.accel_x,
+          gargs->mbed_params.accel_y,
+          gargs->mbed_params.accel_z,
+          gargs->mbed_params.pitch,
+          gargs->mbed_params.roll,
+          gargs->mbed_params.yaw,
+          gargs->mbed_params.weapon_voltage,
+          gargs->mbed_params.drive_voltage,
+          gargs->mbed_params.ambient_temp,
+          state_to_str(gargs->mbed_params.arm_status)
+        );
         if (len < sizeof (response))
             websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
 

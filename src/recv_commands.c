@@ -81,7 +81,7 @@ int recv_command_generate(recv_command_t *command, char *buffer){
 
       // Set command parameter for parameterised commands
 			switch(command->type){
-				  case CT_INT:
+				  case CT_INT32:
 						command->param.i = strtol(param_part, &end, 10);
 						if(end == param_part){
 							printf("Conversion error\r\n");
@@ -119,48 +119,59 @@ int recv_command_generate(recv_command_t *command, char *buffer){
 }
 
 int recv_command_execute(recv_command_t *command, thread_args_t *targs){
-	switch(command->id){
-		case CID_RING_RPM:
-			targs->mbed_params.ring_rpm = command->param.f;
-			break;
-		case CID_CON_1_RPM:
-			targs->mbed_params.con_1_rpm = command->param.f;
-			break;
-		case CID_CON_2_RPM:
-			targs->mbed_params.con_2_rpm = command->param.f;
-			break;
-		case CID_ACCEL_X:
-			targs->mbed_params.accel_x = command->param.f;
-			break;
-		case CID_ACCEL_Y:
-			targs->mbed_params.accel_y = command->param.f;
-			break;
-		case CID_ACCEL_Z:
-			targs->mbed_params.accel_z = command->param.f;
-			break;
-		case CID_PITCH:
-			targs->mbed_params.pitch = command->param.f;
-			break;
-		case CID_ROLL:
-			targs->mbed_params.roll = command->param.f;
-			break;
-		case CID_YAW:
-			targs->mbed_params.yaw = command->param.f;
-			break;
-		case CID_WEAPON_VOLTAGE:
-			targs->mbed_params.weapon_voltage = command->param.f;
-			break;
-		case CID_DRIVE_VOLTAGE:
-			targs->mbed_params.drive_voltage = command->param.f;
-			break;
-		case CID_AMBIENT_TEMP:
-			targs->mbed_params.ambient_temp = command->param.f;
-			break;
-		case CID_ESP_LED:
-			targs->esp_params.led = command->param.b;
-			printf("LED now %s\r\n", command->param.b ? "On" : "Off");
-			break;
+  // TODO: Do a bit of refactoring to use type in switch, rather than ID
+  switch(command->id){
+    case CID_DRIVE_1_RPM:
+      targs->mbed_params.drive_1_rpm = command->param.f;
+      break;
+    case CID_DRIVE_2_RPM:
+      targs->mbed_params.drive_2_rpm = command->param.f;
+      break;
+    case CID_DRIVE_3_RPM:
+      targs->mbed_params.drive_3_rpm = command->param.f;
+      break;
+    case CID_WEAPON_1_RPM:
+      targs->mbed_params.weapon_1_rpm = command->param.f;
+      break;
+    case CID_WEAPON_2_RPM:
+      targs->mbed_params.weapon_2_rpm = command->param.f;
+      break;
+    case CID_WEAPON_3_RPM:
+      targs->mbed_params.weapon_3_rpm = command->param.f;
+      break;
+    case CID_ACCEL_X:
+      targs->mbed_params.accel_x = command->param.f;
+      break;
+    case CID_ACCEL_Y:
+      targs->mbed_params.accel_y = command->param.f;
+      break;
+    case CID_ACCEL_Z:
+      targs->mbed_params.accel_z = command->param.f;
+      break;
+    case CID_PITCH:
+      targs->mbed_params.pitch = command->param.f;
+      break;
+    case CID_ROLL:
+      targs->mbed_params.roll = command->param.f;
+      break;
+    case CID_YAW:
+      targs->mbed_params.yaw = command->param.f;
+      break;
+    case CID_WEAPON_VOLTAGE:
+      targs->mbed_params.weapon_voltage = command->param.f;
+      break;
+    case CID_DRIVE_VOLTAGE:
+      targs->mbed_params.drive_voltage = command->param.f;
+      break;
+    case CID_AMBIENT_TEMP:
+      targs->mbed_params.ambient_temp = command->param.f;
+      break;
+    case CID_ESP_LED:
+      targs->esp_params.led = command->param.b;
+      printf("LED now %s\r\n", command->param.b ? "On" : "Off");
+      break;
     case CID_ARM_STATUS:
       targs->mbed_params.arm_status = (state_t) command->param.i;
-	}
+    break;
+  }
 }

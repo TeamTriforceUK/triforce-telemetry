@@ -9,9 +9,10 @@
 #define INCLUDE_RECV_COMMAND_TYPE_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef enum  {
-  CT_INT = 0,
+  CT_INT32 = 0,
   CT_FLOAT,
   CT_STRING,
 	CT_BOOLEAN
@@ -24,13 +25,18 @@ typedef enum  {
   CU_CELCIUS,
   CU_VOLTS,
   CU_DEGREES,
+  CU_AMPS,
+  CU_MILLIAMPS,
 	CU_NONE
 } command_unit_t;
 
 typedef enum  {
-  CID_RING_RPM = 0,
-  CID_CON_1_RPM,
-  CID_CON_2_RPM,
+  CID_DRIVE_1_RPM = 0,
+  CID_DRIVE_2_RPM,
+  CID_DRIVE_3_RPM,
+  CID_WEAPON_1_RPM,
+  CID_WEAPON_2_RPM,
+  CID_WEAPON_3_RPM,
   CID_ACCEL_X,
   CID_ACCEL_Y,
   CID_ACCEL_Z,
@@ -52,7 +58,7 @@ typedef struct {
 
   union {
     float f;
-    int i;
+    int32_t i;
     char c;
     bool b;
   } param;

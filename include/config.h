@@ -18,7 +18,7 @@
 #define UART_START 0x7F  // (backspace)
 #define UART_END 0xD  // (carriage return
 
-#define DEFAULT_WIFI_SSID "Triforce Wifi"
-#define DEFAULT_WIFI_PASS "ilovemyjob"
+#define DEFAULT_WIFI_SSID "SKY2E317"
+#define DEFAULT_WIFI_PASS "CDBQXBAX"
 
 #endif  // INCLUDE_CONFIG_H_

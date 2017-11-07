@@ -13,9 +13,12 @@
 #include "thread_args.h"
 
 static recv_command_t recv_commands[] = {
-  {.id = CID_RING_RPM, .name = "ring_rpm", .unit = CU_RPM, .type = CT_FLOAT},
-  {.id = CID_CON_1_RPM, .name = "con_1_rpm", .unit = CU_RPM, .type = CT_FLOAT},
-  {.id = CID_CON_2_RPM, .name = "con_2_rpm", .unit = CU_RPM, .type = CT_FLOAT},
+  {.id = CID_DRIVE_1_RPM, .name = "drive_1_rpm", .unit = CU_RPM, .type = CT_INT32},
+  {.id = CID_DRIVE_2_RPM, .name = "drive_2_rpm", .unit = CU_RPM, .type = CT_INT32},
+  {.id = CID_DRIVE_3_RPM, .name = "drive_3_rpm", .unit = CU_RPM, .type = CT_INT32},
+  {.id = CID_WEAPON_1_RPM, .name = "weapon_1_rpm", .unit = CU_RPM, .type = CT_INT32},
+  {.id = CID_WEAPON_2_RPM, .name = "weapon_2_rpm", .unit = CU_RPM, .type = CT_INT32},
+  {.id = CID_WEAPON_3_RPM, .name = "weapon_3_rpm", .unit = CU_RPM, .type = CT_INT32},
   {.id = CID_ACCEL_X, .name = "accel_x", .unit = CU_MPSPS, .type = CT_FLOAT},
   {.id = CID_ACCEL_Y, .name = "accel_y", .unit = CU_MPSPS, .type = CT_FLOAT},
   {.id = CID_ACCEL_Z, .name = "accel_z", .unit = CU_MPSPS, .type = CT_FLOAT},
@@ -26,7 +29,7 @@ static recv_command_t recv_commands[] = {
   {.id = CID_DRIVE_VOLTAGE, .name = "d_voltage", .unit = CU_VOLTS, .type = CT_FLOAT},
   {.id = CID_AMBIENT_TEMP, .name = "temp", .unit = CU_CELCIUS, .type = CT_FLOAT},
   {.id = CID_ESP_LED, .name = "esp_led", .unit = CU_NONE, .type = CT_BOOLEAN},
-  {.id = CID_ARM_STATUS, .name = "arm_status", .unit = CU_NONE, .type = CT_INT},
+  {.id = CID_ARM_STATUS, .name = "arm_status", .unit = CU_NONE, .type = CT_INT32},
 };
 
 #define NUM_COMMANDS (sizeof(recv_commands) / sizeof(recv_command_t))
