@@ -54,17 +54,29 @@
 					<td id="arm_status"></td>
 				</tr>
 				<tr>
-					<td><b>Ring RPM:</b></td>
-					<td id="ring_rpm"></td>
+					<td><b>Drive Motor 1 RPM:</b></td>
+					<td id="drive_1_rpm"></td>
 				</tr>
-				<tr>
-					<td><b>Contact Wheel RPM 1</b></td>
-					<td id="con_1_rpm"></td>
+        <tr>
+          <td><b>Drive Motor 2 RPM:</b></td>
+          <td id="drive_2_rpm"></td>
+        </tr>
+        <tr>
+          <td><b>Drive Motor 3 RPM:</b></td>
+          <td id="drive_3_rpm"></td>
+        </tr>
+        <tr>
+					<td><b>Weapon Motor 1 RPM:</b></td>
+					<td id="weapon_1_rpm"></td>
 				</tr>
-				<tr>
-					<td><b>Contact Wheel RPM 2</b></td>
-					<td id="con_2_rpm"></td>
-				</tr>
+        <tr>
+          <td><b>Weapon Motor 2 RPM:</b></td>
+          <td id="weapon_2_rpm"></td>
+        </tr>
+        <tr>
+          <td><b>Weapon Motor 3 RPM:</b></td>
+          <td id="weapon_3_rpm"></td>
+        </tr>
 				<tr>
 					<td><b>Acceleration X</b></td>
 					<td id="accel_x"></td>
@@ -164,12 +176,16 @@
 					console.log(stats);
 
 					//Update value on web page
+          //TODO: Do this programatically with no dependance on knowing the JSON keys
 					document.getElementById('uptime').innerHTML = stats.uptime + ' seconds';
 					document.getElementById('heap').innerHTML = stats.heap + ' bytes';
 					document.getElementById('led').innerHTML = (stats.led == 1) ? 'On' : 'Off';
-					document.getElementById('ring_rpm').innerHTML = stats.ring_rpm + ' RPM';
-					document.getElementById('con_1_rpm').innerHTML = stats.con_1_rpm + ' RPM';
-					document.getElementById('con_2_rpm').innerHTML = stats.con_2_rpm + ' RPM';
+					document.getElementById('drive_1_rpm').innerHTML = stats.drive_1_rpm + ' RPM';
+					document.getElementById('drive_2_rpm').innerHTML = stats.drive_2_rpm + ' RPM';
+					document.getElementById('drive_3_rpm').innerHTML = stats.drive_3_rpm + ' RPM';
+          document.getElementById('weapon_1_rpm').innerHTML = stats.weapon_1_rpm + ' RPM';
+					document.getElementById('weapon_2_rpm').innerHTML = stats.weapon_2_rpm + ' RPM';
+					document.getElementById('weapon_3_rpm').innerHTML = stats.weapon_3_rpm + ' RPM';
 					document.getElementById('accel_x').innerHTML = stats.accel_x + ' m/s/s';
 					document.getElementById('accel_y').innerHTML = stats.accel_y + ' m/s/s';
 					document.getElementById('accel_z').innerHTML = stats.accel_z + ' m/s/s';
