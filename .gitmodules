@@ -1,0 +1,6 @@
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/TeamTriforceUK/triforce-frontend.git
+[submodule "libs/jsmn"]
+	path = libs/jsmn
+	url = https://github.com/TeamTriforceUK/jsmn.git
