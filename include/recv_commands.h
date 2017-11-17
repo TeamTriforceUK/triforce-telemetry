@@ -16,5 +16,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
+int parse_telemetry_string_id(char *buffer);
+int parse_telemetry_string_type(tele_command_t *command, char *buffer);
 int parse_telemetry_string(tele_command_t *command, char *buffer);

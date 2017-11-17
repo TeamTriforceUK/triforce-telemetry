@@ -26,6 +26,11 @@
 #define INCLUDE_TELE_PARAM_H_
 
 #include "stdint.h"
+#include "stdbool.h"
+#include "string.h"
+
+#define MAX_PARAM_NAME_LEN 20U
+#define MAX_PARAM_STR_LEN 20U
 
 /* TODO(camieac): I want to refactor the commands to make it easy to add new
    ones. I'll probably add a function for each command that updates the
@@ -40,7 +45,8 @@ typedef enum {
   CT_FLOAT,
   CT_STRING,
   CT_BOOLEAN,
-  CT_NONE
+  CT_NONE,
+  NUM_CT
 } tele_command_type_t;
 
 static const char* tele_command_type_str[] = {
@@ -52,6 +58,7 @@ static const char* tele_command_type_str[] = {
 };
 
 const char* tele_command_type_to_string(tele_command_type_t tctid);
+tele_command_type_t string_to_type(char *string, size_t len);
 
 /**
  * Supported units that can be associated with a telemetry parameter.
@@ -63,7 +70,8 @@ typedef enum {
   CU_CELCIUS,
   CU_VOLTS,
   CU_DEGREES,
-  CU_NONE
+  CU_NONE,
+  NUM_CU
 } tele_command_unit_t;
 
 static const char* tele_command_unit_str[] = {
@@ -77,6 +85,7 @@ static const char* tele_command_unit_str[] = {
 };
 
 const char* tele_command_unit_to_string(tele_command_unit_t tcid);
+tele_command_unit_t string_to_unit(char *string, size_t len);
 
 /**
  * Defines all telemetry parameters.
@@ -91,7 +100,7 @@ typedef uint32_t tele_command_id_t;
 typedef struct {
   tele_command_id_t id;
 
-  const char *name;
+  char name[MAX_PARAM_NAME_LEN];
   tele_command_unit_t unit;
   tele_command_type_t type;
 
@@ -103,7 +112,7 @@ typedef struct {
     int32_t i32;
     char c;
     bool b;
-    const char *s;
+    char s[MAX_PARAM_STR_LEN];
   } param;
 
 } tele_command_t;

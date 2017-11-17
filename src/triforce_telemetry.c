@@ -1,6 +1,6 @@
 /**
-* @file http_server.c
-* @author https://github.com/lujji, Cameron A. Craig
+* @file triforce_telemetry.c
+* @author Cameron A. Craig
 * @date 25 May 2017
 * @copyright Cameron A. Craig
 * @brief Connects to an access point and hosts a HTTP server.
@@ -29,9 +29,9 @@
 thread_args_t *gargs;
 
 enum {
-    SSI_UPTIME,
-    SSI_FREE_HEAP,
-    SSI_LED_STATE
+  SSI_UPTIME,
+  SSI_FREE_HEAP,
+  SSI_LED_STATE
 };
 
 int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen) {
@@ -72,55 +72,77 @@ void websocket_task(void *pvParameter) {
         int heap = (int) xPortGetFreeHeapSize();
 
         /* Generate response in JSON format */
-        char response[512];
-        memset(response, 0x00, 512);
+        char response[MAX_JSON_STRLEN * 20];
+        memset(&response[0], 0x00, MAX_JSON_STRLEN * 20);
 
         int i;
         int len = 0;
-        for(i = 0; i < gargs->num_mbed_params; i++) {
-          switch (gargs->mbed_params[i].type) {
-            case CT_FLOAT:
-              len += snprintf(
-                response + strlen(response),
-                MAX_JSON_STRLEN,
-                "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%.2f\"}\r",
-                gargs->mbed_params[i].name,
-                tele_command_type_to_string(gargs->mbed_params[i].type),
-                tele_command_unit_to_string(gargs->mbed_params[i].unit),
-                gargs->mbed_params[i].param.f
-              );
-            break;
-            case CT_INT32:
-              len += snprintf(
-                response + strlen(response),
-                MAX_JSON_STRLEN,
-                "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%d\"}\r",
-                gargs->mbed_params[i].name,
-                tele_command_type_to_string(gargs->mbed_params[i].type),
-                tele_command_unit_to_string(gargs->mbed_params[i].unit),
-                gargs->mbed_params[i].param.i32
-              );
-              break;
-            case CT_BOOLEAN:
-              len += snprintf(
-                response + strlen(response),
-                MAX_JSON_STRLEN,
-                "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%s\"}\r",
-                gargs->mbed_params[i].name,
-                tele_command_type_to_string(gargs->mbed_params[i].type),
-                tele_command_unit_to_string(gargs->mbed_params[i].unit),
-                gargs->mbed_params[i].param.b ? "ON" : "OFF"
-              );
-              break;
-            case CT_NONE:
-            default:
-              printf("Type not yet supported for streaming.\r\n");
-              break;
-          }
-        }
+        //for(i = 0; i < 1/*gargs->num_mbed_params*/; i++) {
+        //   switch (gargs->mbed_params[i].type) {
+        //     case CT_FLOAT:
+        //       len += snprintf(
+        //         response + strlen(response),
+        //         MAX_JSON_STRLEN,
+        //         "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%.2f\"}\r",
+        //         "meh",
+        //         "meeeeh",
+        //         "meeeeeeh",
+        //         0.0f
+        //       );
+        //       // len += snprintf(
+        //       //   response + strlen(response),
+        //       //   MAX_JSON_STRLEN,
+        //       //   "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%.2f\"}\r",
+        //       //   gargs->mbed_params[i].name,
+        //       //   tele_command_type_to_string(gargs->mbed_params[i].type),
+        //       //   tele_command_unit_to_string(gargs->mbed_params[i].unit),
+        //       //   gargs->mbed_params[i].param.f
+        //       // );
+        //     break;
+        //     case CT_INT32:
+        //       // len += snprintf(
+        //       //   response + strlen(response),
+        //       //   MAX_JSON_STRLEN,
+        //       //   "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%d\"}\r",
+        //       //   gargs->mbed_params[i].name,
+        //       //   tele_command_type_to_string(gargs->mbed_params[i].type),
+        //       //   tele_command_unit_to_string(gargs->mbed_params[i].unit),
+        //       //   gargs->mbed_params[i].param.i32
+        //       // );
+        //       break;
+        //     case CT_BOOLEAN:
+        //       // len += snprintf(
+        //       //   response + strlen(response),
+        //       //   MAX_JSON_STRLEN,
+        //       //   "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%s\"}\r",
+        //       //   gargs->mbed_params[i].name,
+        //       //   tele_command_type_to_string(gargs->mbed_params[i].type),
+        //       //   tele_command_unit_to_string(gargs->mbed_params[i].unit),
+        //       //   gargs->mbed_params[i].param.b ? "ON" : "OFF"
+        //       // );
+        //       break;
+        //     case CT_NONE:
+        //     default:
+        //       printf("Type not yet supported for streaming.\r\n");
+        //       break;
+        //   }
+        // }
+
+        len += snprintf(
+          response + strlen(response),
+          MAX_JSON_STRLEN,
+          "[{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%.2f\"}]\r",
+          "meh",
+          "meeeeh",
+          "meeeeeeh",
+          0.0f
+        );
 
         if (len < sizeof (response)) {
-            websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
+          printf("Sending JSON data to websocket (len: %d)\r\n", len);
+          websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
+        } else {
+          printf("Exceeded json string length budget!");
         }
 
         vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -200,12 +222,14 @@ void httpd_task(void *pvParameters) {
     for (;;);
 }
 
+//static int parse_telemetry(thread_args_t *targs, char *buffer){}
+
 void serial_recv_task(void *pvParameters){
   thread_args_t * targs = (thread_args_t *) pvParameters;
 
   char buffer[100];
   int pos = 0;
-  printf( "$");
+  tele_command_id_t id;
 
 	while(1){
     buffer[pos] = getchar();
@@ -214,14 +238,29 @@ void serial_recv_task(void *pvParameters){
     if(buffer[pos] == UART_END){
       buffer[pos+1] = NULL;
       printf( "\r\n");
-      tele_command_t command;
-      // Populate the command structure with the data collected in buffer
-      if(!parse_telemetry_string(&command, buffer)){
-        printf("\rFailed to recognise string, ignoring\r\n");
+      /* Get the ID first so we know where to store values.
+      */
+      if((id = parse_telemetry_string_id(buffer)) >= 0) {
+        /* Get the type before we read a value,
+           so we know how the value should be stored
+        */
+        if(parse_telemetry_string_type(&targs->mbed_params[id], buffer) >= 0) {
+          // Populate the command structure with the data collected in buffer
+          if(parse_telemetry_string(&targs->mbed_params[id], buffer) >= 0){
+            printf("command set success\r\n");
+
+            //If the command ID is the biggest so far, update
+            if((id + 1) > targs->num_mbed_params) {
+              targs->num_mbed_params = id + 1;
+            }
+          } else {
+            printf("\rFailed to recognise string, ignoring\r\n");
+          }
+        }
       } else {
-        // Populate our shared store of telemetry values
-        memcpy(&targs->mbed_params[command.id], &command, sizeof(tele_command_t));
+        printf("Failed to get ID\r\n");
       }
+
       // This is a big dodgy but it works :)
       // We increment pos at the end of the loop so this -1 is only brief
       // TODO: Avoid this -1 set
@@ -234,7 +273,6 @@ void serial_recv_task(void *pvParameters){
     }
 
     buffer[pos+1] = NULL;
-    printf("\r$ %s", buffer);
     pos++;
   }
 }
