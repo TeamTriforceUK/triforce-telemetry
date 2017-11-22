@@ -18,5 +18,10 @@
 typedef struct {
   tele_command_t mbed_params[30];
   uint32_t num_mbed_params;
+
+  struct {
+    SemaphoreHandle_t params;
+  } mutex;
+
 } thread_args_t;
 #endif  // INCLUDE_THREAD_ARGS_H_

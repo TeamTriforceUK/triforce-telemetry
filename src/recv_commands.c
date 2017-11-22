@@ -6,6 +6,8 @@
 * @brief <brief>
 */
 
+#include "FreeRTOS.h"
+#include "semphr.h"
 #include "return_codes.h"
 #include "utils.h"
 #include "thread_args.h"
@@ -15,6 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+extern SemaphoreHandle_t shared_mutex;
 
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 	if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
@@ -56,7 +60,7 @@ int parse_telemetry_string_id(char *buffer) {
   return -1;
 }
 
-int parse_telemetry_string_type(tele_command_t *command, char *buffer) {
+int parse_telemetry_string_type(thread_args_t *targs, tele_command_t *command, char *buffer) {
 
   int ret;
   jsmn_parser parser;
@@ -79,16 +83,27 @@ int parse_telemetry_string_type(tele_command_t *command, char *buffer) {
     if (jsoneq(buffer, &t[i], "type") == 0) {
       printf("type: %.*s\n", t[i+1].end-t[i+1].start,
       buffer + t[i+1].start);
-      command->type = string_to_type(buffer + t[i+1].start, t[i+1].end-t[i+1].start);
-      printf("type id: %d\r\n", command->type);
-      return 0;
+
+      /* Write to command safely */
+      printf("locking\r\n");
+      if(xSemaphoreTake(shared_mutex, (TickType_t) 10) == pdTRUE) {
+        printf("locked\r\n");
+        command->type = string_to_type(buffer + t[i+1].start, t[i+1].end-t[i+1].start);
+        printf("type id: %d\r\n", command->type);
+        xSemaphoreGive(shared_mutex);
+        return 0;
+      } else {
+        printf("Warning: Could not get lock,trying again next time\r\n");
+        return -1;
+      }
+
     }
   }
   return -1;
 }
 
 
-int parse_telemetry_string(tele_command_t *command, char *buffer){
+int parse_telemetry_string(thread_args_t *targs, tele_command_t *command, char *buffer){
 
   printf("parsing: %s\r\n", buffer);
   int ret;

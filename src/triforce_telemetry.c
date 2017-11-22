@@ -13,7 +13,8 @@
 #include <esp/uart.h>
 #include <string.h>
 #include <stdio.h>
-#include <FreeRTOS.h>
+#include "FreeRTOS.h"
+#include "semphr.h"
 #include <task.h>
 #include <ssid_config.h>
 #include <httpd/httpd.h>
@@ -27,6 +28,7 @@
 /* Allows thread_args to be accessible to callback functions that do not easily
    support (void *) arguments. */
 thread_args_t *gargs;
+SemaphoreHandle_t shared_mutex;
 
 enum {
   SSI_UPTIME,
@@ -62,6 +64,12 @@ char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *p
 void websocket_task(void *pvParameter) {
     struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter;
 
+    union  {
+      bool b;
+      int32_t i32;
+      float f;
+    } tmp_val;
+
     for (;;) {
         if (pcb == NULL || pcb->state != ESTABLISHED) {
             printf("Connection closed, deleting task\n");
@@ -77,65 +85,92 @@ void websocket_task(void *pvParameter) {
 
         int i;
         int len = 0;
-        //for(i = 0; i < 1/*gargs->num_mbed_params*/; i++) {
-        //   switch (gargs->mbed_params[i].type) {
-        //     case CT_FLOAT:
-        //       len += snprintf(
-        //         response + strlen(response),
-        //         MAX_JSON_STRLEN,
-        //         "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%.2f\"}\r",
-        //         "meh",
-        //         "meeeeh",
-        //         "meeeeeeh",
-        //         0.0f
-        //       );
-        //       // len += snprintf(
-        //       //   response + strlen(response),
-        //       //   MAX_JSON_STRLEN,
-        //       //   "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%.2f\"}\r",
-        //       //   gargs->mbed_params[i].name,
-        //       //   tele_command_type_to_string(gargs->mbed_params[i].type),
-        //       //   tele_command_unit_to_string(gargs->mbed_params[i].unit),
-        //       //   gargs->mbed_params[i].param.f
-        //       // );
-        //     break;
-        //     case CT_INT32:
-        //       // len += snprintf(
-        //       //   response + strlen(response),
-        //       //   MAX_JSON_STRLEN,
-        //       //   "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%d\"}\r",
-        //       //   gargs->mbed_params[i].name,
-        //       //   tele_command_type_to_string(gargs->mbed_params[i].type),
-        //       //   tele_command_unit_to_string(gargs->mbed_params[i].unit),
-        //       //   gargs->mbed_params[i].param.i32
-        //       // );
-        //       break;
-        //     case CT_BOOLEAN:
-        //       // len += snprintf(
-        //       //   response + strlen(response),
-        //       //   MAX_JSON_STRLEN,
-        //       //   "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%s\"}\r",
-        //       //   gargs->mbed_params[i].name,
-        //       //   tele_command_type_to_string(gargs->mbed_params[i].type),
-        //       //   tele_command_unit_to_string(gargs->mbed_params[i].unit),
-        //       //   gargs->mbed_params[i].param.b ? "ON" : "OFF"
-        //       // );
-        //       break;
-        //     case CT_NONE:
-        //     default:
-        //       printf("Type not yet supported for streaming.\r\n");
-        //       break;
-        //   }
-        // }
+
+        /* We conveniently have two values not in the main array, so print one
+           at the start and one at the end to handle the array opening and closing brackets.
+        */
+        len += snprintf(
+          response + strlen(response),
+          MAX_JSON_STRLEN,
+          "[{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%df\"},\r",
+          "uptime",
+          "int32",
+          "seconds",
+          uptime
+        );
+
+        for(i = 0; i < gargs->num_mbed_params; i++) {
+          /* All param strings start with the same string format */
+          len += snprintf(
+            response + strlen(response),
+            MAX_JSON_STRLEN,
+            "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": ",
+            gargs->mbed_params[i].name,
+            tele_command_type_to_string(gargs->mbed_params[i].type),
+            tele_command_unit_to_string(gargs->mbed_params[i].unit)
+          );
+
+          switch (gargs->mbed_params[i].type) {
+            case CT_FLOAT:
+              /* Write to command safely */
+              if(xSemaphoreTake(shared_mutex, (TickType_t) 10) == pdTRUE) {
+                tmp_val.f = gargs->mbed_params[i].param.f;
+                xSemaphoreGive(shared_mutex);
+              } else {
+                printf("%s: Could not take semaphore\r\n", __func__);
+                break;
+              }
+
+              len += snprintf(
+                response + strlen(response),
+                MAX_JSON_STRLEN,
+                "\"%.2f\"}\r",
+                tmp_val.f
+              );
+            break;
+            case CT_INT32:
+              len += snprintf(
+                response + strlen(response),
+                MAX_JSON_STRLEN,
+                "\"%d\"}\r",
+                gargs->mbed_params[i].param.i32
+              );
+              break;
+            case CT_BOOLEAN:
+              len += snprintf(
+                response + strlen(response),
+                MAX_JSON_STRLEN,
+                "\"%s\"}\r",
+                gargs->mbed_params[i].param.b ? "ON" : "OFF"
+              );
+              break;
+            case CT_NONE:
+            default:
+              len += snprintf(
+                response + strlen(response),
+                MAX_JSON_STRLEN,
+                "\"%s\"}\r",
+                "invalid"
+              );
+              break;
+          }
+
+          /* Add comma after each entry */
+          len += snprintf(
+            response + strlen(response),
+            MAX_JSON_STRLEN,
+            ","
+          );
+        }
 
         len += snprintf(
           response + strlen(response),
           MAX_JSON_STRLEN,
-          "[{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%.2f\"}]\r",
-          "meh",
-          "meeeeh",
-          "meeeeeeh",
-          0.0f
+          "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%df\"}]\r",
+          "heap",
+          "int32",
+          "bytes",
+          heap
         );
 
         if (len < sizeof (response)) {
@@ -244,9 +279,9 @@ void serial_recv_task(void *pvParameters){
         /* Get the type before we read a value,
            so we know how the value should be stored
         */
-        if(parse_telemetry_string_type(&targs->mbed_params[id], buffer) >= 0) {
+        if(parse_telemetry_string_type(targs, &targs->mbed_params[id], buffer) >= 0) {
           // Populate the command structure with the data collected in buffer
-          if(parse_telemetry_string(&targs->mbed_params[id], buffer) >= 0){
+          if(parse_telemetry_string(targs, &targs->mbed_params[id], buffer) >= 0){
             printf("command set success\r\n");
 
             //If the command ID is the biggest so far, update
@@ -295,6 +330,33 @@ void user_init(void) {
 
     //Allow targs to be globally accessible
     gargs = &targs;
+
+    /* Initialise semaphores */
+    targs.mutex.params = NULL;
+    targs.mutex.params = xSemaphoreCreateMutex();
+    if(targs.mutex.params != NULL) {
+      printf("esp_init(): Create param semaphore.\r\n");
+    } else {
+      printf("Error: Failed to create semaphore!\r\n");
+    }
+
+    shared_mutex = NULL;
+    shared_mutex = xSemaphoreCreateMutex();
+    if(shared_mutex != NULL) {
+      printf("esp_init(): Create shared_mutex semaphore.\r\n");
+    } else {
+      printf("Error: Failed to create shared_mutex semaphore!\r\n");
+    }
+
+    /* Make sure semaphores work */
+    if(xSemaphoreTake(shared_mutex, (TickType_t) 10) == pdTRUE) {
+      printf("esp_init: Lock obtained.\r\n");
+      xSemaphoreGive(shared_mutex);
+      printf("Unlocked\r\n");
+    } else {
+      printf("esp_init: Lock could not be obtained.\r\n");
+    }
+
 
     printf("esp_init(): WiFi\r\n");
     /* required to call wifi_set_opmode before station_set_config */
