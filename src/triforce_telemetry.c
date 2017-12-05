@@ -92,7 +92,7 @@ void websocket_task(void *pvParameter) {
         len += snprintf(
           response + strlen(response),
           MAX_JSON_STRLEN,
-          "[{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%df\"},\r",
+          "[{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%d\"},\r",
           "uptime",
           "int32",
           "seconds",
@@ -166,7 +166,7 @@ void websocket_task(void *pvParameter) {
         len += snprintf(
           response + strlen(response),
           MAX_JSON_STRLEN,
-          "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%df\"}]\r",
+          "{\"name\": \"%s\", \"type\": \"%s\", \"unit\": \"%s\", \"value\": \"%d\"}]\r",
           "heap",
           "int32",
           "bytes",
@@ -275,14 +275,14 @@ void serial_recv_task(void *pvParameters){
       printf( "\r\n");
       /* Get the ID first so we know where to store values.
       */
-      if((id = parse_telemetry_string_id(buffer)) >= 0) {
+      if(parse_telemetry_string_id(buffer, &id) >= 0) {
         /* Get the type before we read a value,
            so we know how the value should be stored
         */
         if(parse_telemetry_string_type(targs, &targs->mbed_params[id], buffer) >= 0) {
           // Populate the command structure with the data collected in buffer
           if(parse_telemetry_string(targs, &targs->mbed_params[id], buffer) >= 0){
-            printf("command set success\r\n");
+            // printf("command set success\r\n");
 
             //If the command ID is the biggest so far, update
             if((id + 1) > targs->num_mbed_params) {
@@ -301,10 +301,11 @@ void serial_recv_task(void *pvParameters){
       // TODO: Avoid this -1 set
       pos = -1;
     }
-
-    if(buffer[pos] == UART_START){
-      buffer[pos] = NULL;
-      pos = 0;
+    if(pos >= 0) {
+      if(buffer[pos] == UART_START){
+        buffer[pos] = NULL;
+        pos = 0;
+      }
     }
 
     buffer[pos+1] = NULL;

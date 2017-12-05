@@ -28,7 +28,7 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 	return -1;
 }
 
-int parse_telemetry_string_id(char *buffer) {
+int parse_telemetry_string_id(char *buffer, tele_command_id_t *id) {
 
   int ret;
   jsmn_parser parser;
@@ -49,12 +49,13 @@ int parse_telemetry_string_id(char *buffer) {
   int i;
   for (i = 1; i < ret; i++) {
     if (jsoneq(buffer, &t[i], "id") == 0) {
-      printf("id: %.*s\n", t[i+1].end-t[i+1].start,
-      buffer + t[i+1].start);
+      // printf("id: %.*s\n", t[i+1].end-t[i+1].start,
+      // buffer + t[i+1].start);
       // Put in NULL termination
       char tmp[t[i+1].end-t[i+1].start+1];
       strncpy(&tmp[0], buffer + t[i+1].start, t[i+1].end-t[i+1].start+1);
-      return atoi(&tmp[0]);
+      *id = atoi(&tmp[0]);
+      return 0;
     }
   }
   return -1;
@@ -81,15 +82,13 @@ int parse_telemetry_string_type(thread_args_t *targs, tele_command_t *command, c
   int i;
   for (i = 1; i < ret; i++) {
     if (jsoneq(buffer, &t[i], "type") == 0) {
-      printf("type: %.*s\n", t[i+1].end-t[i+1].start,
-      buffer + t[i+1].start);
+      // printf("type: %.*s\n", t[i+1].end-t[i+1].start,
+      // buffer + t[i+1].start);
 
       /* Write to command safely */
-      printf("locking\r\n");
       if(xSemaphoreTake(shared_mutex, (TickType_t) 10) == pdTRUE) {
-        printf("locked\r\n");
         command->type = string_to_type(buffer + t[i+1].start, t[i+1].end-t[i+1].start);
-        printf("type id: %d\r\n", command->type);
+        // printf("type id: %d\r\n", command->type);
         xSemaphoreGive(shared_mutex);
         return 0;
       } else {
@@ -105,7 +104,7 @@ int parse_telemetry_string_type(thread_args_t *targs, tele_command_t *command, c
 
 int parse_telemetry_string(thread_args_t *targs, tele_command_t *command, char *buffer){
 
-  printf("parsing: %s\r\n", buffer);
+  // printf("parsing: %s\r\n", buffer);
   int ret;
   jsmn_parser parser;
   jsmntok_t t[24];
@@ -125,20 +124,20 @@ int parse_telemetry_string(thread_args_t *targs, tele_command_t *command, char *
   int i;
   for (i = 1; i < ret; i++) {
     if (jsoneq(buffer, &t[i], "name") == 0) {
-      printf("name: %.*s\n", t[i+1].end-t[i+1].start,
-      buffer + t[i+1].start);
+      // printf("name: %.*s\n", t[i+1].end-t[i+1].start,
+      // buffer + t[i+1].start);
       memcpy(&command->name[0], buffer + t[i+1].start, t[i+1].end-t[i+1].start);
       i++;
     } else if (jsoneq(buffer, &t[i], "unit") == 0) {
       /* We may want to do strtol() here to get numeric value */
-      printf("unit: %.*s\n", t[i+1].end-t[i+1].start,
-      buffer + t[i+1].start);
+      // printf("unit: %.*s\n", t[i+1].end-t[i+1].start,
+      // buffer + t[i+1].start);
       command->unit = string_to_unit(buffer + t[i+1].start, t[i+1].end-t[i+1].start);
-      printf("unit id: %d\r\n", command->unit);
+      // printf("unit id: %d\r\n", command->unit);
       i++;
     } else if (jsoneq(buffer, &t[i], "value") == 0) {
-      printf("value: %.*s\n", t[i+1].end-t[i+1].start,
-      buffer + t[i+1].start);
+      // printf("value: %.*s\n", t[i+1].end-t[i+1].start,
+      // buffer + t[i+1].start);
 
       // add null termination
       char tmp[t[i+1].end-t[i+1].start+1];
