@@ -1,6 +1,6 @@
 # Introduction
 This document describes the serial interfaces between the LPC1678 (mbed) and ESP8266 (WiFi) devices.
-A custom humnan-readable protocol is defined below to communicate data between the decives.
+A custom human-readable protocol is defined below to communicate data between the devices.
 
 A start byte and end byte are defined as follows:
 
@@ -9,7 +9,7 @@ A start byte and end byte are defined as follows:
 | START_BYTE | BACKSPACE       | 127 | 0x7F |
 | END_BYTE   | CARRIAGE RETURN | 13  | 0x0D |
 
-This allows the serial interface to be used by humans as well as the microcontrollers (all charcters used are accessible using a standard keyboard).
+This allows the serial interface to be used by humans as well as the microcontrollers (all characters used are accessible using a standard keyboard).
 
 ## LPC1768 to ESP8266
 
